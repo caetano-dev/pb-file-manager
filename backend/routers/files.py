@@ -1,0 +1,105 @@
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File as FastAPIFile
+from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from database import get_db
+import models, schemas, security
+from storage import get_s3_client, BUCKET_NAME
+
+router = APIRouter(prefix="/files", tags=["Files"])
+
+ALLOWED_MIME_TYPES = {"image/png", "image/jpeg", "application/pdf", "text/plain"}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+@router.post("/upload", response_model=schemas.FileResponse, status_code=status.HTTP_201_CREATED)
+async def upload_file(
+    file: UploadFile = FastAPIFile(...),
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db),
+    s3_client = Depends(get_s3_client)
+):
+    if file.content_type not in ALLOWED_MIME_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid file type. Allowed: .png, .jpg, .pdf, .txt")
+    
+    content = await file.read()
+    size = len(content)
+    
+    if size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
+    
+    storage_key = f"{current_user.id}/{uuid.uuid4()}_{file.filename}"
+    
+    await s3_client.put_object(
+        Bucket=BUCKET_NAME, 
+        Key=storage_key, 
+        Body=content, 
+        ContentType=file.content_type
+    )
+    
+    new_file = models.File(
+        owner_id=current_user.id,
+        original_name=file.filename,
+        storage_key=storage_key,
+        mime_type=file.content_type,
+        size=size
+    )
+    
+    db.add(new_file)
+    await db.commit()
+    await db.refresh(new_file)
+    return new_file
+
+@router.get("/", response_model=list[schemas.FileResponse])
+async def list_files(
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(models.File).filter(models.File.owner_id == current_user.id))
+    return result.scalars().all()
+
+@router.get("/{file_id}/download")
+async def download_file(
+    file_id: int,
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db),
+    s3_client = Depends(get_s3_client)
+):
+    result = await db.execute(
+        select(models.File).filter(models.File.id == file_id, models.File.owner_id == current_user.id)
+    )
+    file_record = result.scalars().first()
+    if not file_record:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    s3_obj = await s3_client.get_object(Bucket=BUCKET_NAME, Key=file_record.storage_key)
+    
+    async def stream_generator():
+        async for chunk in s3_obj['Body']:
+            yield chunk
+
+    return StreamingResponse(
+        stream_generator(),
+        media_type=file_record.mime_type,
+        headers={"Content-Disposition": f'attachment; filename="{file_record.original_name}"'}
+    )
+
+@router.delete("/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_file(
+    file_id: int,
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db),
+    s3_client = Depends(get_s3_client)
+):
+    result = await db.execute(
+        select(models.File).filter(models.File.id == file_id, models.File.owner_id == current_user.id)
+    )
+    file_record = result.scalars().first()
+    if not file_record:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    await s3_client.delete_object(Bucket=BUCKET_NAME, Key=file_record.storage_key)
+    
+    await db.delete(file_record)
+    await db.commit()
+    return None
