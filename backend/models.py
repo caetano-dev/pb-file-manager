@@ -22,5 +22,5 @@ class File(Base):
     mime_type = Column(String, nullable=False)
     size = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
+    version = Column(Integer, default=1)
     owner = relationship("User", back_populates="files")

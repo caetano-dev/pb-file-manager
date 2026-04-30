@@ -11,6 +11,7 @@ import models, schemas, security
 from storage import get_s3_client, BUCKET_NAME, session
 import json
 from cache import redis_client
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -32,6 +33,16 @@ async def upload_file(
     
     if size > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
+      
+    stmt = select(models.File.version).where(
+            models.File.owner_id == current_user.id,
+            models.File.original_name == file.filename
+        ).order_by(models.File.version.desc()).limit(1)
+    
+    result = await db.execute(stmt)
+    latest_version = result.scalar()
+    
+    new_version = (latest_version or 0) + 1
     
     storage_key = f"{current_user.id}/{uuid.uuid4()}_{file.filename}"
     
@@ -54,7 +65,8 @@ async def upload_file(
         original_name=file.filename,
         storage_key=storage_key,
         mime_type=file.content_type,
-        size=size
+        size=size,
+        version=new_version
     )
     
     db.add(new_file)

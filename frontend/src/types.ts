@@ -4,4 +4,5 @@ export interface FileData {
   mime_type: string;
   size: number;
   created_at: string;
+  version: number;
 }

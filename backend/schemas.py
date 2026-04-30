@@ -18,6 +18,7 @@ class FileResponse(BaseModel):
     mime_type: str
     size: int
     created_at: datetime
+    version: int
 
     class Config:
         from_attributes = True
