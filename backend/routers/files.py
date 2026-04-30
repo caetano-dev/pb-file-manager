@@ -3,9 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File 
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from pydantic import BaseModel
 from database import get_db
 import models, schemas, security
-from storage import get_s3_client, BUCKET_NAME
+from storage import get_s3_client, BUCKET_NAME, session, MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET_KEY
 
 router = APIRouter(prefix="/files", tags=["Files"])
 
@@ -62,8 +63,7 @@ async def list_files(
 async def download_file(
     file_id: int,
     current_user: models.User = Depends(security.get_current_user),
-    db: AsyncSession = Depends(get_db),
-    s3_client = Depends(get_s3_client)
+    db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
         select(models.File).filter(models.File.id == file_id, models.File.owner_id == current_user.id)
@@ -72,11 +72,16 @@ async def download_file(
     if not file_record:
         raise HTTPException(status_code=404, detail="File not found")
     
-    s3_obj = await s3_client.get_object(Bucket=BUCKET_NAME, Key=file_record.storage_key)
-    
     async def stream_generator():
-        async for chunk in s3_obj['Body']:
-            yield chunk
+        async with session.client(
+            "s3",
+            endpoint_url=MINIO_URL,
+            aws_access_key_id=MINIO_ACCESS_KEY,
+            aws_secret_access_key=MINIO_SECRET_KEY,
+        ) as stream_client:
+            s3_obj = await stream_client.get_object(Bucket=BUCKET_NAME, Key=file_record.storage_key)
+            async for chunk in s3_obj['Body']:
+                yield chunk
 
     return StreamingResponse(
         stream_generator(),
@@ -103,3 +108,39 @@ async def delete_file(
     await db.delete(file_record)
     await db.commit()
     return None
+    
+class ShareResponse(BaseModel):
+    share_url: str
+    expires_in: int
+    
+@router.get("/{file_id}/share", response_model=ShareResponse)
+async def generate_share_link(
+    file_id: int,
+    expires_in: int = 3600,
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(models.File).filter(models.File.id == file_id, models.File.owner_id == current_user.id)
+    )
+    file_record = result.scalars().first()
+    if not file_record:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    async with session.client(
+        "s3",
+        endpoint_url=MINIO_URL,
+        aws_access_key_id=MINIO_ACCESS_KEY,
+        aws_secret_access_key=MINIO_SECRET_KEY,
+    ) as s3:
+        url = await s3.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': BUCKET_NAME, 'Key': file_record.storage_key},
+            ExpiresIn=expires_in
+        )
+        
+        # Rewrite internal Docker hostname to localhost for local testing
+        if "minio:9000" in url:
+            url = url.replace("minio:9000", "localhost:9000")
+            
+    return {"share_url": url, "expires_in": expires_in}
