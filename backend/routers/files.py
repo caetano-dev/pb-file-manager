@@ -1,12 +1,14 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File as FastAPIFile
+import os
+from config import settings
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseModel
 from database import get_db
 import models, schemas, security
-from storage import get_s3_client, BUCKET_NAME, session, MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET_KEY
+from storage import get_s3_client, BUCKET_NAME, session
 import json
 from cache import redis_client
 
@@ -19,26 +21,33 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 async def upload_file(
     file: UploadFile = FastAPIFile(...),
     current_user: models.User = Depends(security.get_current_user),
-    db: AsyncSession = Depends(get_db),
-    s3_client = Depends(get_s3_client)
+    db: AsyncSession = Depends(get_db)
 ):
     if file.content_type not in ALLOWED_MIME_TYPES:
         raise HTTPException(status_code=400, detail="Invalid file type. Allowed: .png, .jpg, .pdf, .txt")
     
-    content = await file.read()
-    size = len(content)
+    file.file.seek(0, os.SEEK_END)
+    size = file.file.tell()
+    file.file.seek(0)
     
     if size > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
     
     storage_key = f"{current_user.id}/{uuid.uuid4()}_{file.filename}"
     
-    await s3_client.put_object(
-        Bucket=BUCKET_NAME, 
-        Key=storage_key, 
-        Body=content, 
-        ContentType=file.content_type
-    )
+    async with session.client(
+        "s3",
+        endpoint_url=settings.MINIO_URL,
+        aws_access_key_id=settings.MINIO_ACCESS_KEY,
+        aws_secret_access_key=settings.MINIO_SECRET_KEY,
+    ) as stream_client:
+        
+        await stream_client.upload_fileobj(
+            file.file,
+            BUCKET_NAME,
+            storage_key,
+            ExtraArgs={"ContentType": file.content_type}
+        )
     
     new_file = models.File(
         owner_id=current_user.id,
@@ -91,9 +100,9 @@ async def download_file(
     async def stream_generator():
         async with session.client(
             "s3",
-            endpoint_url=MINIO_URL,
-            aws_access_key_id=MINIO_ACCESS_KEY,
-            aws_secret_access_key=MINIO_SECRET_KEY,
+            endpoint_url=settings.MINIO_URL,
+            aws_access_key_id=settings.MINIO_ACCESS_KEY,
+            aws_secret_access_key=settings.MINIO_SECRET_KEY,
         ) as stream_client:
             s3_obj = await stream_client.get_object(Bucket=BUCKET_NAME, Key=file_record.storage_key)
             async for chunk in s3_obj['Body']:
@@ -147,9 +156,9 @@ async def generate_share_link(
     
     async with session.client(
         "s3",
-        endpoint_url=MINIO_URL,
-        aws_access_key_id=MINIO_ACCESS_KEY,
-        aws_secret_access_key=MINIO_SECRET_KEY,
+        endpoint_url=settings.MINIO_URL,
+        aws_access_key_id=settings.MINIO_ACCESS_KEY,
+        aws_secret_access_key=settings.MINIO_SECRET_KEY,
     ) as s3:
         url = await s3.generate_presigned_url(
             'get_object',
