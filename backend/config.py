@@ -8,6 +8,6 @@ class Settings(BaseSettings):
     REDIS_URL: str
     SECRET_KEY: str = "insecure_dev_key_change_in_production"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()
