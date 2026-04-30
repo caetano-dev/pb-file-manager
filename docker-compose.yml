@@ -23,10 +23,12 @@ services:
       - MINIO_URL=http://minio:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
+      - REDIS_URL=redis://redis:6379
     command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
     depends_on:
       - db
       - minio
+      - redis
 
   db:
     image: postgres:15-alpine
@@ -50,6 +52,11 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
 
 volumes:
   db_data:

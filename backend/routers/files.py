@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from database import get_db
 import models, schemas, security
 from storage import get_s3_client, BUCKET_NAME, session, MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET_KEY
+import json
+from cache import redis_client
 
 router = APIRouter(prefix="/files", tags=["Files"])
 
@@ -49,6 +51,9 @@ async def upload_file(
     db.add(new_file)
     await db.commit()
     await db.refresh(new_file)
+    
+    await redis_client.delete(f"user_files:{current_user.id}")
+    
     return new_file
 
 @router.get("/", response_model=list[schemas.FileResponse])
@@ -56,8 +61,19 @@ async def list_files(
     current_user: models.User = Depends(security.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    cache_key = f"user_files:{current_user.id}"
+    
+    cached_data = await redis_client.get(cache_key)
+    if cached_data:
+        return json.loads(cached_data)
+
     result = await db.execute(select(models.File).filter(models.File.owner_id == current_user.id))
-    return result.scalars().all()
+    files = result.scalars().all()
+    
+    files_data = [schemas.FileResponse.model_validate(f).model_dump(mode='json') for f in files]
+    await redis_client.set(cache_key, json.dumps(files_data), ex=300)
+    
+    return files
 
 @router.get("/{file_id}/download")
 async def download_file(
@@ -107,6 +123,8 @@ async def delete_file(
     
     await db.delete(file_record)
     await db.commit()
+    
+    await redis_client.delete(f"user_files:{current_user.id}")
     return None
     
 class ShareResponse(BaseModel):
