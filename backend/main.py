@@ -1,10 +1,9 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-import models, security, schemas
-from routers import auth, files
 from storage import init_bucket
+from routers import auth, files
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,13 +22,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(files.router)
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(files.router, prefix="/files", tags=["Files"])
 
 @app.get("/")
-async def root():
-    return {"message": "API and infrastructure are running."}
-    
-@app.get("/me", response_model=schemas.UserResponse)
-async def read_users_me(current_user: models.User = Depends(security.get_current_user)):
-    return current_user
+def health_check():
+    return {"status": "ok", "message": "API is running"}

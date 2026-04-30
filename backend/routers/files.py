@@ -12,7 +12,7 @@ from storage import get_s3_client, BUCKET_NAME, session
 import json
 from cache import redis_client
 
-router = APIRouter(prefix="/files", tags=["Files"])
+router = APIRouter()
 
 ALLOWED_MIME_TYPES = {"image/png", "image/jpeg", "application/pdf", "text/plain"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB

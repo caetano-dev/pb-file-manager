@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from database import get_db
 import models, schemas, security
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter()
 
 @router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
@@ -35,3 +35,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     
     access_token = security.create_access_token(data={"sub": str(user.id)})
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=schemas.UserResponse)
+async def get_current_user_profile(current_user: models.User = Depends(security.get_current_user)):
+    return current_user
