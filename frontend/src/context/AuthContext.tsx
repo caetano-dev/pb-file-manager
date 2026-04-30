@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     
     try {
-      const response = await api.get<User>('/me');
+      const response = await api.get<User>('/auth/me');
       setUser(response.data);
     } catch (error) {
       localStorage.removeItem('token');
