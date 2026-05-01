@@ -2,18 +2,9 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch } from '../lib/api'; 
-
-interface User {
-  email: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (token: string) => Promise<void>;
-  logout: () => void;
-}
+import { useQueryClient } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api';
+import type { User, AuthContextType } from '../types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -21,6 +12,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -38,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       localStorage.setItem('email', data.email);
       setUser({ email: data.email });
+      queryClient.clear();
     } catch (error) {
       console.error("Failed to fetch user profile", error);
       logout();
@@ -48,6 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('token');
     localStorage.removeItem('email');
     setUser(null);
+    queryClient.clear();
     router.push('/login');
   };
 

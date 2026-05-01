@@ -8,7 +8,7 @@ services:
       - /app/node_modules
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
-    command: yarn dev -H 0.0.0.0
+    command: npm run dev -- -H 0.0.0.0
 
   backend:
     build:
