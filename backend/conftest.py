@@ -8,13 +8,15 @@ import httpx
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
-import models
+from auth.models import User
+from files.models import File
 from database import Base
 from database import get_db as orig_get_db
 import storage
 import cache
 import security
-from routers import auth as auth_router, files as files_router
+from auth.router import router as auth_router
+from files.router import router as files_router
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -77,7 +79,7 @@ async def s3_mock(monkeypatch, test_app):
     class DummySession:
         def client(self, *args, **kwargs): return _AsyncCM(mock_client)
 
-    monkeypatch.setattr("routers.files.session", DummySession())
+    monkeypatch.setattr("files.service.session", DummySession())
     return mock_client
 
 
@@ -88,14 +90,14 @@ async def redis_mock(monkeypatch):
     mock.set = AsyncMock()
     mock.delete = AsyncMock()
 
-    monkeypatch.setattr("routers.files.redis_client", mock)
+    monkeypatch.setattr("files.service.redis_client", mock)
     return mock
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture()
 async def test_app():
     app = FastAPI()
-    app.include_router(auth_router.router, prefix="/auth", tags=["Authentication"])
-    app.include_router(files_router.router, prefix="/files", tags=["Files"])
+    app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+    app.include_router(files_router, prefix="/files", tags=["Files"])
     app.dependency_overrides[orig_get_db] = override_get_db
     yield app
 
@@ -107,13 +109,13 @@ async def test_client(test_app, s3_mock, redis_mock):
 @pytest_asyncio.fixture
 async def create_user(async_db_session, test_app):
     result = await async_db_session.execute(
-        select(models.User).filter(models.User.email == "testuser@example.com")
+        select(User).filter(User.email == "testuser@example.com")
     )
     user = result.scalars().first()
     
     if not user:
         hashed = security.get_password_hash("testpassword")
-        user = models.User(email="testuser@example.com", hashed_password=hashed)
+        user = User(email="testuser@example.com", hashed_password=hashed)
         async_db_session.add(user)
         await async_db_session.commit()
         await async_db_session.refresh(user)

@@ -3,7 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 from storage import init_bucket
-from routers import auth, files
+from auth.router import router as auth_router
+from files.router import router as files_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,8 +23,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
-app.include_router(files.router, prefix="/files", tags=["Files"])
+app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+app.include_router(files_router, prefix="/files", tags=["Files"])
 
 @app.get("/")
 def health_check():
