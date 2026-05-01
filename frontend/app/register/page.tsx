@@ -1,82 +1,67 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/context/AuthContext';
-import { registerUser, loginUser } from '@/features/auth/api';
+import { useRegister } from '@/features/auth/hooks/useRegister';
+import { InputField } from '@/components/ui/InputField';
+import { AuthLayout } from '@/components/ui/AuthLayout';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
   
-  const { login } = useAuth();
-  const router = useRouter();
-
+  const { register, isSubmitting, error, setError } = useRegister();
+  
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
-
-    try {
-      await registerUser(email, password);
-
-      const loginResponse = await loginUser(email, password);
-
-      await login(loginResponse.access_token);
-      router.push('/');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to register. Email might be taken.');
-    } finally {
-      setIsSubmitting(false);
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
     }
+    await register(email, password);
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
-        
-        {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input 
-              type="email" 
-              required
-              className="w-full border p-2 rounded"
-              autoComplete="username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
-            <input 
-              type="password" 
-              autoComplete="new-password"
-              required
-              className="w-full border p-2 rounded"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <button 
-            type="submit" 
-            disabled={isSubmitting}
-            className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {isSubmitting ? 'Registering...' : 'Create Account'}
-          </button>
-        </form>
-        
-        <p className="mt-4 text-center text-sm">
-          Already have an account? <Link href="/login" className="text-blue-600 hover:underline">Login here</Link>
-        </p>
-      </div>
-    </div>
+    <AuthLayout 
+      title="Register" 
+      error={error} 
+      footerText="Already have an account?" 
+      footerLinkText="Login here" 
+      footerHref="/login"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <InputField 
+          label="Email" 
+          type="email" 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)} 
+          required 
+          autoComplete="username" 
+        />
+        <InputField 
+          label="Password" 
+          type="password" 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+          required 
+          autoComplete="new-password" 
+        />
+        <InputField 
+          label="Confirm password" 
+          type="password" 
+          value={confirmPassword} 
+          onChange={(e) => setConfirmPassword(e.target.value)} 
+          required 
+          autoComplete="new-password" 
+        />
+        <button 
+          type="submit" 
+          disabled={isSubmitting}
+          className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 disabled:opacity-50"
+        >
+          {isSubmitting ? 'Registering...' : 'Create Account'}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }

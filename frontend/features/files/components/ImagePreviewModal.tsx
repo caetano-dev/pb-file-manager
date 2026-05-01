@@ -13,7 +13,7 @@ export const ImagePreviewModal = ({
   imageUrl, 
   filename, 
   onClose 
-}) : ImagePreviewModalProps => {
+} : ImagePreviewModalProps) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';

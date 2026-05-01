@@ -18,7 +18,7 @@ export const FileTable = ({
   onPreview, 
   onShare, 
   onDelete 
-}) : FileTableProps => {
+} : FileTableProps) => {
   
   const groupedFiles = useMemo(() => {
     const groups = files.reduce((acc, file) => {
