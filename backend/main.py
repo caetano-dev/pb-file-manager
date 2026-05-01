@@ -3,15 +3,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 from storage import init_bucket
+from cache import redis_client
 from auth.router import router as auth_router
 from files.router import router as files_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
     await init_bucket()
     yield
+    await redis_client.aclose()
 
 app = FastAPI(title="Pixel Breeders API", lifespan=lifespan)
 

@@ -1,8 +1,6 @@
 import aioboto3
 from config import settings
 
-BUCKET_NAME = "pixelbreeders"
-
 session = aioboto3.Session()
 
 async def get_s3_client():
@@ -22,6 +20,6 @@ async def init_bucket():
         aws_secret_access_key=settings.MINIO_SECRET_KEY,
     ) as client:
         try:
-            await client.head_bucket(Bucket=BUCKET_NAME)
+            await client.head_bucket(Bucket=settings.BUCKET_NAME)
         except Exception:
-            await client.create_bucket(Bucket=BUCKET_NAME)
+            await client.create_bucket(Bucket=settings.BUCKET_NAME)
