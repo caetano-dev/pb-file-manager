@@ -1,0 +1,30 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+bin/
+lib/
+
+# Environment variables and secrets
+.env
+auth_key.json
+
+# Testing and Coverage
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+
+# IDEs and OS files
+.vscode
+.idea
+.DS_Store
+
+# Version Control
+.git
+.gitignore

@@ -23,11 +23,16 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - REDIS_URL=redis://redis:6379
-    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips="*"
+    command: >
+      sh -c "alembic upgrade head && 
+             uvicorn main:app --reload --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
     depends_on:
-      - db
-      - minio
-      - redis
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      redis:
+        condition: service_started
 
   db:
     image: postgres:15-alpine
@@ -39,6 +44,11 @@ services:
       POSTGRES_DB: pixelbreeders
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pixelbreeders"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   minio:
     image: minio/minio
