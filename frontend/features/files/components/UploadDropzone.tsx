@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import { useRef, useState, ChangeEvent } from 'react';
 import { UploadCloud } from 'lucide-react';
 import { useUploadFile } from '../api';
 
@@ -9,11 +9,11 @@ interface UploadDropzoneProps {
   onError: (errorMsg: string) => void;
 }
 
-export const UploadDropzone: React.FC<UploadDropzoneProps> = ({ onUploadSuccess, onError }) => {
+export const UploadDropzone = ({ onUploadSuccess, onError }) : UploadDropzoneProps => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useUploadFile();
 
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 

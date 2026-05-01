@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { useFiles, useDownloadFile, usePreviewFile, useShareFile, useDeleteFile, useUploadFile } from '@/features/files/api';
@@ -17,7 +17,6 @@ export default function DashboardPage() {
   const [previewName, setPreviewName] = useState<string>('');
 
   const { data: files = [], isLoading: filesLoading, isError: filesError } = useFiles();
-  const uploadFileMutation = useUploadFile();
   const downloadFileMutation = useDownloadFile();
   const previewFileMutation = usePreviewFile();
   const shareFileMutation = useShareFile();

@@ -4,7 +4,6 @@ import json
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func
 from .models import File
 from auth.models import User
 from config import settings

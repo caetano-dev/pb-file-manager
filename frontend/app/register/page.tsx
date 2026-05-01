@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { apiFetch } from '@/lib/api';
+import { registerUser, loginUser } from '@/features/auth/api';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -15,27 +15,15 @@ export default function RegisterPage() {
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
     try {
-      await apiFetch('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      await registerUser(email, password);
 
-      const params = new URLSearchParams();
-      params.append('username', email);
-      params.append('password', password);
-
-      const loginResponse = await apiFetch('/auth/login', {
-        method: 'POST',
-        body: params.toString(),
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      }) as any;
+      const loginResponse = await loginUser(email, password);
 
       await login(loginResponse.access_token);
       router.push('/');
@@ -69,7 +57,7 @@ export default function RegisterPage() {
             <label className="block text-sm font-medium mb-1">Password</label>
             <input 
               type="password" 
-              autoComplete="password"
+              autoComplete="new-password"
               required
               className="w-full border p-2 rounded"
               value={password}

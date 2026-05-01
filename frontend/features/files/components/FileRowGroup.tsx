@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Trash2, Download, File as FileIcon, Eye, Share2, ChevronDown, ChevronRight } from 'lucide-react';
 import type { FileData } from '../types';
 import { formatBytes, isImage } from '../utils';
@@ -12,20 +12,20 @@ interface FileRowGroupProps {
   onDelete: (id: number) => void;
 }
 
-export const FileRowGroup: React.FC<FileRowGroupProps> = ({
+export const FileRowGroup = ({
   filename,
   fileVersions,
   onDownload,
   onPreview,
   onShare,
   onDelete,
-}) => {
+}) : FileRowGroupProps => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const latestFile = fileVersions[0];
   const hasHistory = fileVersions.length > 1;
   return (
-      <React.Fragment>
+      <>
         <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
           <td className="p-4">
             <div className="flex items-center gap-3">
@@ -96,6 +96,6 @@ export const FileRowGroup: React.FC<FileRowGroupProps> = ({
             </td>
           </tr>
         ))}
-      </React.Fragment>
+      </>
     );
 };

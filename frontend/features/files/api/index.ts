@@ -32,7 +32,6 @@ export function useUploadFile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FILES_QUERY_KEY });
-      queryClient.refetchQueries({ queryKey: FILES_QUERY_KEY });
     },
   });
 }

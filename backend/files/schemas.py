@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 class FileResponse(BaseModel):
@@ -8,9 +8,7 @@ class FileResponse(BaseModel):
     size: int
     created_at: datetime
     version: int
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ShareResponse(BaseModel):
     share_url: str

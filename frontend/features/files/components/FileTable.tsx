@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import type { FileData } from '../types';
 import { FileRowGroup } from './FileRowGroup';
 
@@ -12,13 +12,13 @@ interface FileTableProps {
   onDelete: (id: number) => void;
 }
 
-export const FileTable: React.FC<FileTableProps> = ({ 
+export const FileTable = ({ 
   files, 
   onDownload, 
   onPreview, 
   onShare, 
   onDelete 
-}) => {
+}) : FileTableProps => {
   
   const groupedFiles = useMemo(() => {
     const groups = files.reduce((acc, file) => {

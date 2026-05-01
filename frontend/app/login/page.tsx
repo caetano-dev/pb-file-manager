@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { apiFetch } from '@/lib/api';
+import { loginUser } from '@/features/auth/api'; 
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -15,22 +15,13 @@ export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
     try {
-      const params = new URLSearchParams();
-      params.append('username', email);
-      params.append('password', password);
-
-      const response = await apiFetch('/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString()
-      }) as any;
-      
+      const response = await loginUser(email, password);
       await login(response.access_token);
       router.push('/');
     } catch (err: any) {

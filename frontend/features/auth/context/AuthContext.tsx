@@ -1,14 +1,14 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
-import type { User, AuthContextType } from '../types';
+import { getCurrentUser } from '@/features/auth/api'; 
+import type { User, AuthContextType, AuthProviderProps } from '../types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: AuthProviderProps ) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('token', token);
     
     try {
-      const data = await apiFetch('/auth/me', { method: 'GET' }); 
+      const data = await getCurrentUser();
       
       localStorage.setItem('email', data.email);
       setUser({ email: data.email });

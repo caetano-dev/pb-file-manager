@@ -13,7 +13,6 @@ from files.models import File
 from database import Base
 from database import get_db as orig_get_db
 import storage
-import cache
 import security
 from auth.router import router as auth_router
 from files.router import router as files_router

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { X } from 'lucide-react';
 
 interface ImagePreviewModalProps {
@@ -8,12 +8,12 @@ interface ImagePreviewModalProps {
   onClose: () => void;
 }
 
-export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({ 
+export const ImagePreviewModal = ({ 
   isOpen,
   imageUrl, 
   filename, 
   onClose 
-}) => {
+}) : ImagePreviewModalProps => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -47,7 +47,6 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
         </div>
 
         <div className="flex-1 overflow-auto p-4 flex justify-center items-center bg-gray-50/50">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             src={imageUrl} 
             alt={filename} 

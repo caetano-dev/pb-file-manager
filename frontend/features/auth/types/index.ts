@@ -8,3 +8,12 @@ export interface AuthContextType {
   login: (token: string) => Promise<void>;
   logout: () => void;
 }
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+}
+
+export interface AuthProviderProps {
+  children: ReactNode;
+}
