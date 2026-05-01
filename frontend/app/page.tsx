@@ -44,7 +44,6 @@ export default function DashboardPage() {
   };
 
   const closePreview = () => {
-    if (previewUrl) window.URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     setPreviewName('');
   };
@@ -136,8 +135,13 @@ export default function DashboardPage() {
             />
           )}
         </div>
-        <ImagePreviewModal url={previewUrl} name={previewName} onClose={closePreview} />
-      </div>
+        <ImagePreviewModal 
+          isOpen={!!previewUrl}
+          imageUrl={previewUrl} 
+          filename={previewName} 
+          onClose={closePreview} 
+        />
+        </div>
     </ProtectedRoute>
   );
 }

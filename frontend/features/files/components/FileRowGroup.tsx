@@ -40,7 +40,7 @@ export const FileRowGroup: React.FC<FileRowGroupProps> = ({
                 <div className="w-5 h-5" />
               )}
               <FileIcon className="text-gray-400 w-5 h-5 flex-shrink-0" />
-              <span className="font-medium text-gray-800 truncate p-2">{latestFile.original_name}</span>
+              <span className="font-medium text-gray-800 truncate">{latestFile.original_name}</span>
               <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0">
                 v{latestFile.version}
               </span>
@@ -49,7 +49,6 @@ export const FileRowGroup: React.FC<FileRowGroupProps> = ({
           <td className="p-4 text-left text-gray-600 whitespace-nowrap">{formatBytes(latestFile.size)}</td>
           <td className="p-4 text-left text-gray-600 whitespace-nowrap">{new Date(latestFile.created_at).toLocaleDateString()}</td>
           <td className="p-4">
-            {/* Right-aligned container with a fixed width (w-44) guarantees buttons stack perfectly */}
             <div className="flex justify-end">
               <div className="flex items-center justify-end w-44">
                 {isImage(latestFile.mime_type) && (
@@ -75,7 +74,7 @@ export const FileRowGroup: React.FC<FileRowGroupProps> = ({
           <tr key={oldFile.id} className="bg-gray-50 border-b border-gray-100 text-sm">
             <td className="p-4 pl-16">
               <div className="flex items-center gap-3 text-gray-500">
-                <span className="p-2 text-gray-600 text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0">
+                <span className="text-gray-600 text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0">
                   v{oldFile.version}
                 </span>
                 <span className="truncate">{oldFile.original_name}</span>
