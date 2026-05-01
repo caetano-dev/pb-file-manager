@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../api/axios';
+'use client';
 
-export const Register = () => {
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { apiFetch } from '@/lib/api';
+
+export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,18 +21,24 @@ export const Register = () => {
     setIsSubmitting(true);
 
     try {
-      await api.post('/auth/register', { email, password });
+      await apiFetch('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       const params = new URLSearchParams();
       params.append('username', email);
       params.append('password', password);
 
-      const loginResponse = await api.post('/auth/login', params, {
+      const loginResponse = await apiFetch('/auth/login', {
+        method: 'POST',
+        body: params.toString(),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
+      }) as any;
 
-      await login(loginResponse.data.access_token);
-      navigate('/');
+      await login(loginResponse.access_token);
+      router.push('/');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to register. Email might be taken.');
     } finally {
@@ -51,6 +60,7 @@ export const Register = () => {
               type="email" 
               required
               className="w-full border p-2 rounded"
+              autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -59,6 +69,7 @@ export const Register = () => {
             <label className="block text-sm font-medium mb-1">Password</label>
             <input 
               type="password" 
+              autoComplete="password"
               required
               className="w-full border p-2 rounded"
               value={password}
@@ -75,9 +86,9 @@ export const Register = () => {
         </form>
         
         <p className="mt-4 text-center text-sm">
-          Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login here</Link>
+          Already have an account? <Link href="/login" className="text-blue-600 hover:underline">Login here</Link>
         </p>
       </div>
     </div>
   );
-};
+}

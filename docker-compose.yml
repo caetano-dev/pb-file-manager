@@ -1,13 +1,14 @@
 services:
   frontend:
-    build: 
-      context: ./frontend
+    build: ./frontend
     ports:
-      - "5173:5173"
+      - "3000:3000"
     volumes:
       - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
-    command: yarn dev
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    command: yarn dev -H 0.0.0.0
 
   backend:
     build:
@@ -22,7 +23,7 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - REDIS_URL=redis://redis:6379
-    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips="*"
     depends_on:
       - db
       - minio

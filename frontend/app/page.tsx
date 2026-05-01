@@ -1,36 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import api from '../api/axios';
-import type { FileData } from '../types';
-import { FileTable } from '../components/FileTable';
-import { UploadDropzone } from '../components/UploadDropzone';
-import { ImagePreviewModal } from '../components/ImagePreviewModal';
+'use client';
 
-export const Dashboard = () => {
-  const { user, logout } = useAuth();
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { apiFetch } from '@/lib/api';
+import type { FileData } from '@/types';
+import { FileTable } from '@/components/FileTable';
+import { UploadDropzone } from '@/components/UploadDropzone';
+import { ImagePreviewModal } from '@/components/ImagePreviewModal';
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const { user, logout, loading } = useAuth();
   const [files, setFiles] = useState<FileData[]>([]);
   const [error, setError] = useState('');
-  
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState<string>('');
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    if (user) {
+      fetchFiles();
+    }
+  }, [user]);
+
   const fetchFiles = async () => {
     try {
-      const response = await api.get<FileData[]>('/files/');
-      setFiles(response.data);
+      const response = await apiFetch('/files', { method: 'GET' });
+      setFiles(response as FileData[]);
     } catch (err) {
       setError('Could not load your files.');
     }
   };
 
-  useEffect(() => {
-    fetchFiles();
-  }, []);
-
   const handleDownload = async (id: number, filename: string) => {
     try {
-      const response = await api.get(`/files/${id}/download`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = await apiFetch(`/files/${id}/download`, {
+        method: 'GET',
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', filename);
@@ -45,8 +59,11 @@ export const Dashboard = () => {
 
   const handlePreview = async (id: number, filename: string) => {
     try {
-      const response = await api.get(`/files/${id}/download`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = await apiFetch(`/files/${id}/download`, {
+        method: 'GET',
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(blob);
       setPreviewUrl(url);
       setPreviewName(filename);
     } catch (err) {
@@ -62,28 +79,35 @@ export const Dashboard = () => {
 
   const handleShare = async (id: number) => {
     try {
-      const response = await api.get(`/files/${id}/share`);
-      const shareUrl = response.data.share_url;
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        alert('Shareable link copied to clipboard.');
-      } catch (clipboardErr) {
-        window.prompt('Link generated successfully.', shareUrl);
+        const response = await apiFetch(`/files/${id}/share`, { 
+          method: 'GET' 
+        }) as { share_url: string, expires_in: number };
+        
+        try {
+          await navigator.clipboard.writeText(response.share_url);
+          
+          const hours = Math.round(response.expires_in / 3600);
+          alert(`Shareable link copied to clipboard. It expires in ${hours} hour(s).`);
+        } catch (clipboardErr) {
+          window.prompt('Link generated successfully:', response.share_url);
+        }
+      } catch (err) {
+        setError('Failed to generate share link.');
       }
-    } catch (err) {
-      setError('Failed to generate share link.');
-    }
-  };
+    };
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this file?')) return;
     try {
-      await api.delete(`/files/${id}`);
+      await apiFetch(`/files/${id}`, { method: 'DELETE' });
       setFiles(files.filter(f => f.id !== id));
     } catch (err) {
       setError('Failed to delete file.');
     }
   };
+
+  if (loading) return <div>Loading session...</div>;
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -118,4 +142,4 @@ export const Dashboard = () => {
       <ImagePreviewModal url={previewUrl} name={previewName} onClose={closePreview} />
     </div>
   );
-};
+}

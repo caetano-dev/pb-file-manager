@@ -1,9 +1,12 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+'use client';
 
-export const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+
+export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const router = useRouter();
 
   if (loading) {
     return (
@@ -14,7 +17,8 @@ export const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    router.push('/login');
+    return null;
   }
 
   return children;

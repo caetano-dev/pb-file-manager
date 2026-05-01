@@ -48,14 +48,14 @@ async def test_upload_size_limit(test_client: AsyncClient, create_user):
 
 @pytest.mark.asyncio
 async def test_list_files(test_client: AsyncClient, create_user, s3_mock, redis_mock):
-    r0 = await test_client.get("/files/")
+    r0 = await test_client.get("/files")
     assert r0.status_code == 200
 
     files = {"file": ("list.txt", b"content", "text/plain")}
     ru = await test_client.post("/files/upload", files=files)
     assert ru.status_code == 201
 
-    r = await test_client.get("/files/")
+    r = await test_client.get("/files")
     assert r.status_code == 200
     data = r.json()
     assert isinstance(data, list)
@@ -93,7 +93,7 @@ async def test_delete_file_triggers_s3_and_redis(test_client: AsyncClient, creat
     assert s3_mock.delete_object.await_count >= 1
     assert redis_mock.delete.await_count >= 1
 
-    rlist = await test_client.get("/files/")
+    rlist = await test_client.get("/files")
     assert rlist.status_code == 200
     files_after = rlist.json()
     assert all(f["id"] != fid for f in files_after)

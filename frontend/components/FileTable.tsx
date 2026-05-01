@@ -1,6 +1,8 @@
+'use client';
+
 import { Trash2, Download, File as FileIcon, Eye, Share2, ChevronDown, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
-import type { FileData } from '../types';
+import type { FileData } from '@/types';
 
 interface FileTableProps {
   files: FileData[];

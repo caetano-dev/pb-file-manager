@@ -77,7 +77,7 @@ async def upload_file(
     
     return new_file
 
-@router.get("/", response_model=list[schemas.FileResponse])
+@router.get("", response_model=list[schemas.FileResponse])
 async def list_files(
     current_user: models.User = Depends(security.get_current_user),
     db: AsyncSession = Depends(get_db)

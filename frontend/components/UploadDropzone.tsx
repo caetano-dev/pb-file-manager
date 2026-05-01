@@ -1,6 +1,8 @@
+'use client';
+
 import React, { useRef, useState } from 'react';
 import { UploadCloud } from 'lucide-react';
-import api from '../api/axios';
+import { apiFetch } from '@/lib/api';
 
 interface UploadDropzoneProps {
   onUploadSuccess: () => void;
@@ -15,7 +17,6 @@ export const UploadDropzone: React.FC<UploadDropzoneProps> = ({ onUploadSuccess,
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
-    // Client-side validation
     if (selectedFile.size > 10 * 1024 * 1024) {
       onError('File size exceeds the 10MB limit.');
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -28,8 +29,9 @@ export const UploadDropzone: React.FC<UploadDropzoneProps> = ({ onUploadSuccess,
     formData.append('file', selectedFile);
 
     try {
-      await api.post('/files/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      await apiFetch('/files/upload', {
+        method: 'POST',
+        body: formData 
       });
       onUploadSuccess();
       if (fileInputRef.current) fileInputRef.current.value = '';
