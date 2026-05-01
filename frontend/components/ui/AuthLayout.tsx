@@ -18,7 +18,7 @@ export const AuthLayout = ({
   footerLinkText, 
   footerHref 
 }: AuthLayoutProps) => (
-  <div className="flex justify-center items-center min-h-screen bg-gray-100">
+  <div className="flex text-gray-900 justify-center items-center min-h-screen">
     <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
       <h2 className="text-2xl font-bold mb-6 text-center">{title}</h2>
       
