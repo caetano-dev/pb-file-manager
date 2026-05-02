@@ -1,9 +1,9 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine, Base
-from storage import init_bucket
-from cache import redis_client
+from core.database import engine, Base
+from core.storage import init_bucket
+from core.cache import redis_client
 from auth.router import router as auth_router
 from files.router import router as files_router
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status, UploadFile, File as FastAPIFile, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
+from core.database import get_db
 from auth.models import User
 from .schemas import FileResponse, ShareResponse
 from .service import (
@@ -14,8 +14,8 @@ from .service import (
     InvalidFileTypeError,
     FileNotFoundError
 )
-from storage import get_s3_client
-import security
+from core.storage import get_s3_client
+from core import security
 
 router = APIRouter()
 

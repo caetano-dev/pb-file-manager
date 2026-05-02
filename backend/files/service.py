@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from .models import File
 from auth.models import User
-from config import settings
-from storage import session
-from cache import redis_client
+from core.config import settings
+from core.storage import session
+from core.cache import redis_client
 
 ALLOWED_MIME_TYPES = {"image/png", "image/jpeg", "application/pdf", "text/plain"}
 MAX_FILE_SIZE = 10 * 1024 * 1024 

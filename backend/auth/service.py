@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from .models import User
-import security
+from core import security
 
 class EmailAlreadyRegisteredError(ValueError):
     pass

@@ -10,10 +10,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from auth.models import User
 from files.models import File
-from database import Base
-from database import get_db as orig_get_db
-import storage
-import security
+from core.database import Base
+from core.database import get_db as orig_get_db
+import core.storage
+from core import security
 from auth.router import router as auth_router
 from files.router import router as files_router
 
@@ -67,7 +67,7 @@ async def s3_mock(monkeypatch, test_app):
     async def _get_s3_client_override():
         yield mock_client
         
-    test_app.dependency_overrides[storage.get_s3_client] = _get_s3_client_override
+    test_app.dependency_overrides[core.storage.get_s3_client] = _get_s3_client_override
 
     class _AsyncCM:
         def __init__(self, client):

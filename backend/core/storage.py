@@ -1,5 +1,5 @@
 import aioboto3
-from config import settings
+from .config import settings
 
 session = aioboto3.Session()
 
