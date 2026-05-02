@@ -14,12 +14,13 @@ export async function loginUser(email: string, password: string) : Promise<Login
 }
 
 export async function getCurrentUser() : Promise<User> {
-  return apiFetch('/auth/me', { method: 'GET' }) as Promise<User>;
+  return apiFetch('/auth/me', { method: 'GET', credentials: 'include' }) as Promise<User>;
 }
 
 export async function registerUser(email: string, password: string) {
   return apiFetch('/auth/register', {
     method: 'POST',
+    credentials: 'include',
     body: JSON.stringify({ email, password }),
     headers: { 'Content-Type': 'application/json' },
   });

@@ -13,20 +13,22 @@ export const AuthProvider = ({ children }: AuthProviderProps ) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setUser({ email: localStorage.getItem('email') || '' });
-    }
-    setLoading(false);
+    const fetchSession = async () => {
+      try {
+        const data = await getCurrentUser();
+        setUser({ email: data.email });
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSession();
   }, []);
 
-  const login = async (token: string) => {
-    localStorage.setItem('token', token);
-    
+  const login = async () => {
     try {
       const data = await getCurrentUser();
-      
-      localStorage.setItem('email', data.email);
       setUser({ email: data.email });
       queryClient.clear();
     } catch (error) {
@@ -36,8 +38,6 @@ export const AuthProvider = ({ children }: AuthProviderProps ) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
     setUser(null);
     queryClient.clear();
     navigate('/login');

@@ -1,4 +1,5 @@
 import aioboto3
+from botocore.exceptions import ClientError
 from .config import settings
 
 session = aioboto3.Session()
@@ -21,5 +22,9 @@ async def init_bucket():
     ) as client:
         try:
             await client.head_bucket(Bucket=settings.BUCKET_NAME)
-        except Exception:
-            await client.create_bucket(Bucket=settings.BUCKET_NAME)
+        except ClientError as e:
+            error_code = e.response.get("Error", {}).get("Code")
+            if error_code == "404":
+                await client.create_bucket(Bucket=settings.BUCKET_NAME)
+            else:
+                raise e

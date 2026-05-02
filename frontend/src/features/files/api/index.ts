@@ -8,7 +8,7 @@ export function useFiles() {
   return useQuery({
     queryKey: FILES_QUERY_KEY,
     queryFn: async () => {
-      const response = await apiFetch('/files', { method: 'GET' });
+      const response = await apiFetch('/files', { method: 'GET', credentials: 'include' });
       return response as FileData[];
     },
     staleTime: 1000 * 60 * 5,
@@ -25,6 +25,7 @@ export function useUploadFile() {
       
       const response = await apiFetch('/files/upload', {
         method: 'POST',
+        credentials: 'include',
         body: formData,
       });
       
@@ -41,6 +42,7 @@ export function useDownloadFile() {
     mutationFn: async ({ fileId, filename }: { fileId: number; filename: string }) => {
       const blob = await apiFetch(`/files/${fileId}/download`, {
         method: 'GET',
+        credentials: 'include',
         responseType: 'blob',
       });
 
@@ -61,6 +63,7 @@ export function usePreviewFile() {
     mutationFn: async ({ fileId }: { fileId: number }) => {
       const blob = await apiFetch(`/files/${fileId}/download`, {
         method: 'GET',
+        credentials: 'include',
         responseType: 'blob',
       });
       return window.URL.createObjectURL(blob);
@@ -84,7 +87,7 @@ export function useDeleteFile() {
   
   return useMutation({
     mutationFn: async (fileId: number) => {
-      await apiFetch(`/files/${fileId}`, { method: 'DELETE' });
+      await apiFetch(`/files/${fileId}`, { method: 'DELETE', credentials: 'include' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FILES_QUERY_KEY });
