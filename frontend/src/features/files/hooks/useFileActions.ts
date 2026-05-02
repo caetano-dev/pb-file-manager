@@ -77,7 +77,8 @@ export function useFileActions() {
     filesLoading,
     filesError,
     error,
-    setError: clearError,
+    setError,
+    clearError,
     previewModal: {
       isOpen: !!previewUrl,
       url: previewUrl,

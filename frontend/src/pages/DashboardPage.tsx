@@ -50,7 +50,7 @@ export default function DashboardPage() {
           )}
 
           <UploadDropzone 
-            onUploadSuccess={setError} 
+            onUploadSuccess={() => setError('')} 
             onError={setError}
           />
 
