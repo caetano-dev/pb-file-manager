@@ -44,7 +44,6 @@ export const FileTable = ({
         </div>
       ) : (
         <>
-          {/* Mobile view - card layout */}
           <div className="md:hidden space-y-4">
             {Object.entries(groupedFiles).map(([filename, fileVersions]) => (
               <FileRowGroup 
@@ -60,7 +59,6 @@ export const FileTable = ({
             ))}
           </div>
 
-          {/* Desktop view - table layout */}
           <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
             <table className="w-full text-left border-collapse table-auto">
               <thead>
