@@ -43,13 +43,19 @@ Todas as funcionalidades obrigatórias e requisitos bônus propostos no teste fo
 
 ## Instruções de Instalação e Execução
 
-1. **Configuração de Variáveis de Ambiente:**
-   Copie o arquivo de exemplo para criar o seu arquivo `.env` local na raiz do projeto.
+1. **Clonar o repositório**
+
+   ```bash
+   git clone https://github.com/caetano-dev/pb-file-manager && cd pb-file-manager
+   ```
+
+2. **Configuração de Variáveis de Ambiente:**
+   Copie o arquivo de exemplo para criar o seu arquivo `.env` local na raiz do projeto. (Para simplificar a execução, o example.env já está configurado com todas as chaves de acesso padrão)
    ```bash
    cp example.env .env
    ```
 
-2. **Inicialização da Aplicação:**
+3. **Inicialização da Aplicação:**
    Execute o Docker Compose para construir as imagens e subir os serviços (Banco de dados, MinIO, Redis, Backend e Frontend).
    ```bash
    docker compose up --build
