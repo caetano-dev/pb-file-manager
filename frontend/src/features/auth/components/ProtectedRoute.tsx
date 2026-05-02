@@ -1,12 +1,10 @@
-'use client';
-
 import { ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -17,7 +15,7 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   }
 
   if (!user) {
-    router.push('/login');
+    navigate('/login');
     return null;
   }
 

@@ -1,6 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 .DS_Store
 
+dist/
+dist-ssr/
+
+# Vite specific
+vite.config.ts.timestamp-*
 # dependencies
 /node_modules
 /.pnp

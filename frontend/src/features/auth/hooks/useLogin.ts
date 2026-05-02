@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../api';
 import { useAuth } from '../context/AuthContext';
 
@@ -7,7 +7,7 @@ export function useLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const executeLogin = async (email: string, password: string) => {
     setIsSubmitting(true);
@@ -18,7 +18,7 @@ export function useLogin() {
       
       await login(response.access_token);
       
-      router.push('/');
+      navigate('/');
     } catch (err: any) {
       const errorMessage = err.response?.data?.detail || 'Failed to login. Please check your credentials.';
       setError(errorMessage);

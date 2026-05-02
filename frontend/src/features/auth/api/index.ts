@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api';
-import type { LoginResponse } from '../types';
+import type { LoginResponse, User } from '../types';
 
 export async function loginUser(email: string, password: string) : Promise<LoginResponse> {
   const params = new URLSearchParams();

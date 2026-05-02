@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { registerUser, loginUser } from '../api';
 import { useAuth } from '../context/AuthContext';
 
@@ -7,7 +7,7 @@ export function useRegister() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const register = async (email: string, password: string) => {
     setIsSubmitting(true);
@@ -17,7 +17,7 @@ export function useRegister() {
       await registerUser(email, password);
       const loginResponse = await loginUser(email, password);
       await login(loginResponse.access_token);
-      router.push('/');
+      navigate('/');
     } catch (err: any) {
       const errorMessage = err.response?.data?.detail || 'Failed to register. Email might be taken.';
       setError(errorMessage);

@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, FormEvent } from 'react';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { InputField } from '@/components/ui/InputField';

@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 interface AuthLayoutProps {
   title: string;
@@ -32,7 +32,7 @@ export const AuthLayout = ({
       
       <p className="mt-4 text-center text-sm">
         {footerText}{' '}
-        <Link href={footerHref} className="text-blue-600 hover:underline">
+        <Link to={footerHref} className="text-blue-600 hover:underline">
           {footerLinkText}
         </Link>
       </p>

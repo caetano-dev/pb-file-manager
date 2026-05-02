@@ -1,7 +1,5 @@
-'use client';
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrentUser } from '@/features/auth/api'; 
 import type { User, AuthContextType, AuthProviderProps } from '../types';
@@ -11,7 +9,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: AuthProviderProps ) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -42,7 +40,7 @@ export const AuthProvider = ({ children }: AuthProviderProps ) => {
     localStorage.removeItem('email');
     setUser(null);
     queryClient.clear();
-    router.push('/login');
+    navigate('/login');
   };
 
   return (

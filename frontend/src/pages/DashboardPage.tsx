@@ -1,5 +1,3 @@
-'use client';
-
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { useFileActions } from '@/features/files/hooks/useFileActions';
 import { FileTable } from '@/features/files/components/FileTable';
