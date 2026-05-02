@@ -9,10 +9,15 @@ class EmailAlreadyRegisteredError(ValueError):
 class AuthenticationFailedError(ValueError):
     pass
 
+class PasswordTooShortError(ValueError):
+    pass
+    
 async def register_user(email: str, password: str, db: AsyncSession) -> User:
     result = await db.execute(select(User).filter(User.email == email))
     if result.scalars().first():
         raise EmailAlreadyRegisteredError("Email already registered")
+    if len(password) < 4:
+      raise PasswordTooShortError("Password should be at least 4 characters long")
     
     hashed_pw = security.get_password_hash(password)
     new_user = User(email=email, hashed_password=hashed_pw)

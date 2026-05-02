@@ -9,10 +9,17 @@ export function useRegister() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const register = async (email: string, password: string) => {
-    setIsSubmitting(true);
+  const register = async (email: string, password: string, confirmPassword: string) => {
     setError('');
-
+    if (password !== confirmPassword) {
+          setError('Passwords do not match.');
+          return;
+    }
+    if (password.length < 4) { // 4 caracteres apenas para facilitar o teste
+      setError('Password should be at least 4 characters long')
+      return;
+    }
+    setIsSubmitting(true)
     try {
       await registerUser(email, password);
       const loginResponse = await loginUser(email, password);
