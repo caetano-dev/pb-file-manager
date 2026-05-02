@@ -119,8 +119,12 @@ async def create_user(async_db_session, test_app):
         await async_db_session.commit()
         await async_db_session.refresh(user)
 
-    async def _override_current_user():
-        return user
-
-    test_app.dependency_overrides[security.get_current_user] = _override_current_user
     return user
+
+@pytest_asyncio.fixture
+async def authenticated_client(test_client, create_user):
+    user = create_user
+    token = security.create_access_token(data={"sub": str(user.id)})
+    test_client.headers.update({"Authorization": f"Bearer {token}"})
+    
+    return test_client, user
