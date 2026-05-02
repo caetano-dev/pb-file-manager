@@ -6,7 +6,15 @@ import { ImagePreviewModal } from '@/features/files/components/ImagePreviewModal
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 
 export default function DashboardPage() {
-  const { user, logout, loading } = useAuth();
+  return (
+      <ProtectedRoute>
+        <DashboardContent />
+      </ProtectedRoute>
+  );
+}
+
+function DashboardContent() {
+  const { user, logout } = useAuth();
   const { 
     files, 
     filesLoading, 
@@ -16,9 +24,6 @@ export default function DashboardPage() {
     previewModal, 
     actions 
   } = useFileActions();
-
-  if (loading) return <div>Loading session...</div>;
-  if (!user) return null;
 
   return (
     <ProtectedRoute>
