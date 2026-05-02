@@ -61,7 +61,7 @@ Todas as funcionalidades obrigatórias e requisitos bônus propostos no teste fo
    docker compose up --build
    ```
 
-A aplicação estará disponível em `http://localhost:5173`.
+A aplicação estará disponível em `http://localhost:5173`
 
 ## Execução dos Testes Automatizados
 
