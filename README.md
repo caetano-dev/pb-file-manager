@@ -71,4 +71,3 @@ docker compose exec backend pytest -v
 O FastAPI gera automaticamente a documentação interativa da API. Com os containers em execução, acesse:
 
 *   **Swagger UI:** `http://localhost:8000/docs`
-*   **ReDoc:** `http://localhost:8000/redoc`
