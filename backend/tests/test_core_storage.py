@@ -1,12 +1,13 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from core import storage
+from botocore.exceptions import ClientError
 
 @pytest.mark.asyncio
 async def test_init_bucket_creates_if_not_exists(monkeypatch):
     mock_client = AsyncMock()
-    
-    mock_client.head_bucket = AsyncMock(side_effect=Exception("Not Found"))
+    error_response = {'Error': {'Code': '404', 'Message': 'Not Found'}}
+    mock_client.head_bucket = AsyncMock(side_effect=ClientError(error_response, 'HeadBucket'))
     mock_client.create_bucket = AsyncMock()
 
     class _MockClientContextManager:

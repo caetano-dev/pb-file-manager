@@ -125,6 +125,6 @@ async def create_user(async_db_session, test_app):
 async def authenticated_client(test_client, create_user):
     user = create_user
     token = security.create_access_token(data={"sub": str(user.id)})
-    test_client.headers.update({"Authorization": f"Bearer {token}"})
+    test_client.cookies.set("token", token)
     
     return test_client, user

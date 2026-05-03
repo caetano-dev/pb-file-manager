@@ -21,8 +21,8 @@ async def test_login_success(test_client: AsyncClient, create_user):
     
     assert r.status_code == 200
     data = r.json()
-    assert "access_token" in data
-    assert data["token_type"] == "bearer"
+    assert data["message"] == "Autenticado com sucesso"
+    assert "token" in r.cookies
 
 @pytest.mark.asyncio
 async def test_login_failure(test_client: AsyncClient, create_user):

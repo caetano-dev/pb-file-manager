@@ -1,10 +1,10 @@
 import pytest
 from datetime import timedelta
 import jwt
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Request
 from core import security
 from core.config import settings
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 def test_password_hashing_and_verification():
     password = "supersecretpassword"
@@ -35,9 +35,11 @@ def test_create_access_token_custom_expiry():
 @pytest.mark.asyncio
 async def test_get_current_user_invalid_token():
     mock_db = AsyncMock()
+    mock_request = MagicMock(spec=Request)
+    mock_request.cookies = {"token": "invalid.jwt.token"}
     
     with pytest.raises(HTTPException) as exc_info:
-        await security.get_current_user(token="invalid.jwt.token", db=mock_db)
+        await security.get_current_user(request=mock_request, db=mock_db)
         
     assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc_info.value.detail == "Could not validate credentials"
